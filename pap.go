@@ -23,7 +23,9 @@ const (
 
 var flagAdd string
 var flagList bool
+var flagListAuto bool
 var flagNext bool
+var flagNextAuto bool
 var flagRemove string
 var flagNotifications bool
 var flagVerbose bool
@@ -31,7 +33,9 @@ var flagVerbose bool
 func init() {
 	flag.StringVar(&flagAdd, "add", "", "Save current source/sink pair as this profile name.")
 	flag.BoolVar(&flagList, "list", false, "List profiles.")
+	flag.BoolVar(&flagListAuto, "list-auto", false, "List auto-generated profiles.")
 	flag.BoolVar(&flagNext, "next", false, "Switch to next profile.")
+	flag.BoolVar(&flagNextAuto, "next-auto", false, "Switch to next auto-generated profile.")
 	flag.StringVar(&flagRemove, "remove", "", "Remove profile.")
 	flag.BoolVar(&flagNotifications, "notify", false, "Use desktop notifications.")
 	flag.BoolVar(&flagVerbose, "verbose", false, "Use verbose output.")
@@ -195,18 +199,50 @@ func cmdListProfiles() {
 	profiles := loadProfiles()
 	client := getClient()
 	info := getServerInfo(client)
+	listProfiles(profiles, info)
+}
 
+func listProfiles(profiles []profile, info pulse.ServerInfo) {
 	for _, profile := range profiles {
 		def := ""
-		if profile.Source.Name == info.DefaultSourceName && profile.Sink.Name == info.DefaultSinkName {
+		if (profile.Source == nil || profile.Source.Name == info.DefaultSourceName) && profile.Sink.Name == info.DefaultSinkName {
 			def = "*"
 		}
 		fmt.Printf("%s%s\n", profile.Title, def)
 		if flagVerbose {
-			fmt.Printf("\tsource %s (%s)\n", profile.Source.Name, profile.Source.Description)
+			if profile.Source != nil {
+				fmt.Printf("\tsource %s (%s)\n", profile.Source.Name, profile.Source.Description)
+			}
 			fmt.Printf("\tsink   %s (%s)\n", profile.Sink.Name, profile.Sink.Description)
 		}
 	}
+}
+
+func cmdListAutoProfiles() {
+	client := getClient()
+	info := getServerInfo(client)
+	profiles := getAutoProfiles(client)
+	listProfiles(profiles, info)
+}
+
+func getAutoProfiles(client *pulse.Client) []profile {
+	sources := getSources(client)
+	sinks := getSinks(client)
+	cardsource := make(map[int]pulse.Source, 0)
+
+	for _, source := range sources {
+		cardsource[source.CardIndex] = source
+	}
+
+	profiles := make([]profile, 0)
+
+	for _, sink := range sinks {
+		source := cardsource[sink.CardIndex]
+		sink := sink
+		profiles = append(profiles, profile{sink.Description, &source, &sink})
+	}
+
+	return profiles
 }
 
 func cmdAddProfile(title string) {
@@ -261,14 +297,22 @@ func cmdRemoveProfile(title string) {
 
 func cmdNextProfile() {
 	profiles := loadProfiles()
+	client := getClient()
+	nextProfile(client, profiles)
+}
 
+func cmdNextAutoProfile() {
+	client := getClient()
+	profiles := getAutoProfiles(client)
+	nextProfile(client, profiles)
+}
+
+func nextProfile(client *pulse.Client, profiles []profile) {
 	if len(profiles) == 0 {
-		failure("No saved profiles!")
+		failure("No profiles!")
 	}
 
 	activeidx := -1
-
-	client := getClient()
 	info := getServerInfo(client)
 
 	for i, profile := range profiles {
@@ -315,8 +359,12 @@ func main() {
 		cmdAddProfile(flagAdd)
 	case flagList:
 		cmdListProfiles()
+	case flagListAuto:
+		cmdListAutoProfiles()
 	case flagNext:
 		cmdNextProfile()
+	case flagNextAuto:
+		cmdNextAutoProfile()
 	case flagRemove != "":
 		cmdRemoveProfile(flagRemove)
 	default:
