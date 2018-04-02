@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/tomyl/pap.svg?branch=master)](https://travis-ci.org/tomyl/pap)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tomyl/pap)](https://goreportcard.com/report/github.com/tomyl/pap)
 
-A simple pulseaudio profile manager. Makes it easy to switch between preconfigured pairs of sources/sinks. Usage:
+A simple pulseaudio profile manager. Makes it easy to switch between preconfigured pairs of sources/sinks. 
+
+# Usage
 
 ```bash
 $ pavucontrol # choose default source and sink
@@ -29,3 +31,27 @@ nuforce
 ```
 
 Tip: use e.g. `pap -next -notify` to show messages in desktop notifcations instead of standard output.
+
+Alternatively, use the zero-configuration mode. `-list-auto` automatically builds one one profile per sink. If the card of the sink has any corresponding source, that becomes the profile source. Use `-next-auto` to switch between auto-generated profiles.
+
+```bash
+$ pap -list-auto                                  
+Built-in Audio Digital Stereo (HDMI)
+Built-in Audio Analog Stereo
+ClearChat Pro USB Analog Stereo*
+NuForce µDAC 2 Analog Stereo
+$ pap -next-auto
+Activated profile NuForce µDAC 2 Analog Stereo.
+```
+
+# Installation
+
+```bash
+$ apt-get install libpulse-dev
+$ go get github.com/tomyl/pap
+$ ~/go/bin/pap -help
+```
+
+# TODO
+
+* [ ] When running `-next` and `-next-auto`, move all playback streams.
