@@ -108,23 +108,31 @@ func getSources(client *pulse.Client) []pulse.Source {
 	return sources
 }
 
-func getSourceByName(sources []pulse.Source, name string) *pulse.Source {
+func getSourceByName(sources []pulse.Source, name string, must bool) *pulse.Source {
 	for _, source := range sources {
 		if source.Name == name {
 			return &source
 		}
 	}
-	failure("Failed to find source named %s", name)
+	if must {
+		failure("Failed to find source named %s", name)
+	} else if flagVerbose {
+		verbose("Failed to find source named %s", name)
+	}
 	return nil
 }
 
-func getSinkByName(sinks []pulse.Sink, name string) *pulse.Sink {
+func getSinkByName(sinks []pulse.Sink, name string, must bool) *pulse.Sink {
 	for _, sink := range sinks {
 		if sink.Name == name {
 			return &sink
 		}
 	}
-	failure("Failed to find sink named %s", name)
+	if must {
+		failure("Failed to find sink named %s", name)
+	} else if flagVerbose {
+		verbose("Failed to find sink named %s", name)
+	}
 	return nil
 }
 
@@ -268,8 +276,8 @@ func cmdAddProfile(title string) {
 	sources := getSources(client)
 	sinks := getSinks(client)
 
-	source := getSourceByName(sources, info.DefaultSourceName)
-	sink := getSinkByName(sinks, info.DefaultSinkName)
+	source := getSourceByName(sources, info.DefaultSourceName, true)
+	sink := getSinkByName(sinks, info.DefaultSinkName, true)
 
 	profiles = append(profiles, profile{title, source, sink})
 	saveProfiles(profiles)
@@ -312,7 +320,7 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 		failure("No profiles!")
 	}
 
-	activeidx := -1
+	activeidx := len(profiles) - 1
 	info := getServerInfo(client)
 
 	for i, profile := range profiles {
@@ -321,39 +329,56 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 		}
 	}
 
-	activeidx++
-
-	if activeidx >= len(profiles) {
-		activeidx = 0
-	}
-
+	startidx := activeidx
 	sources := getSources(client)
 	sinks := getSinks(client)
 
-	active := profiles[activeidx]
+	for {
+		activeidx++
 
-	if active.Source != nil {
-		source := getSourceByName(sources, active.Source.Name)
-
-		if err := client.SetDefaultSource(source.Name); err != nil {
-			failure("Failed to set default source %s: %v", source.Name, err)
+		if activeidx >= len(profiles) {
+			activeidx = 0
 		}
 
-		if source.Muted {
-			if err := source.Unmute(); err != nil {
-				failure("Failed to unmute source %s: %v", source, err)
+		if activeidx == startidx {
+			failure("Found no usable profile")
+		}
+
+		active := profiles[activeidx]
+
+		if active.Source != nil {
+			source := getSourceByName(sources, active.Source.Name, false)
+
+			if source == nil {
+				continue
+			}
+
+			if err := client.SetDefaultSource(source.Name); err != nil {
+				failure("Failed to set default source %s: %v", source.Name, err)
+			}
+
+			if source.Muted {
+				if err := source.Unmute(); err != nil {
+					failure("Failed to unmute source %s: %v", source, err)
+				}
 			}
 		}
-	}
 
-	if active.Sink != nil {
-		sink := getSinkByName(sinks, active.Sink.Name)
-		if err := client.SetDefaultSink(sink.Name); err != nil {
-			failure("Failed to set default sink %s: %v", sink.Name, err)
+		if active.Sink != nil {
+			sink := getSinkByName(sinks, active.Sink.Name, false)
+
+			if sink == nil {
+				continue
+			}
+
+			if err := client.SetDefaultSink(sink.Name); err != nil {
+				failure("Failed to set default sink %s: %v", sink.Name, err)
+			}
 		}
-	}
 
-	success("Activated profile %s.", active.Title)
+		success("Activated profile %s.", active.Title)
+		return
+	}
 }
 
 func main() {
