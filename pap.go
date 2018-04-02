@@ -316,7 +316,7 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 	info := getServerInfo(client)
 
 	for i, profile := range profiles {
-		if profile.Source.Name == info.DefaultSourceName && profile.Sink.Name == info.DefaultSinkName {
+		if (profile.Source == nil || profile.Source.Name == info.DefaultSourceName) && profile.Sink.Name == info.DefaultSinkName {
 			activeidx = i
 		}
 	}
@@ -331,20 +331,25 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 	sinks := getSinks(client)
 
 	active := profiles[activeidx]
-	source := getSourceByName(sources, active.Source.Name)
-	sink := getSinkByName(sinks, active.Sink.Name)
 
-	if err := client.SetDefaultSource(source.Name); err != nil {
-		failure("Failed to set default source %s: %v", source.Name, err)
+	if active.Source != nil {
+		source := getSourceByName(sources, active.Source.Name)
+
+		if err := client.SetDefaultSource(source.Name); err != nil {
+			failure("Failed to set default source %s: %v", source.Name, err)
+		}
+
+		if source.Muted {
+			if err := source.Unmute(); err != nil {
+				failure("Failed to unmute source %s: %v", source, err)
+			}
+		}
 	}
 
-	if err := client.SetDefaultSink(sink.Name); err != nil {
-		failure("Failed to set default sink %s: %v", sink.Name, err)
-	}
-
-	if source.Muted {
-		if err := source.Unmute(); err != nil {
-			failure("Failed to unmute source %s: %v", source, err)
+	if active.Sink != nil {
+		sink := getSinkByName(sinks, active.Sink.Name)
+		if err := client.SetDefaultSink(sink.Name); err != nil {
+			failure("Failed to set default sink %s: %v", sink.Name, err)
 		}
 	}
 
