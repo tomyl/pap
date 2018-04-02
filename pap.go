@@ -202,6 +202,10 @@ func cmdListProfiles() {
 			def = "*"
 		}
 		fmt.Printf("%s%s\n", profile.Title, def)
+		if flagVerbose {
+			fmt.Printf("\tsource %s (%s)\n", profile.Source.Name, profile.Source.Description)
+			fmt.Printf("\tsink   %s (%s)\n", profile.Sink.Name, profile.Sink.Description)
+		}
 	}
 }
 
