@@ -1,9 +1,9 @@
-# pap
+# pap :microphone: :speaker:
 
 [![Build Status](https://travis-ci.org/tomyl/pap.svg?branch=master)](https://travis-ci.org/tomyl/pap)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tomyl/pap)](https://goreportcard.com/report/github.com/tomyl/pap)
 
-A simple pulseaudio profile manager. Usage:
+A simple pulseaudio profile manager. Makes it easy to switch between preconfigured pairs of sources/sinks. Usage:
 
 ```bash
 $ pavucontrol # choose default source and sink
