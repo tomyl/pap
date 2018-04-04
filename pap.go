@@ -11,8 +11,8 @@ import (
 	"path"
 	"sort"
 
-	"github.com/auroralaboratories/pulse"
 	xdg "github.com/queria/golang-go-xdg"
+	"github.com/tomyl/pulse"
 )
 
 const (
@@ -144,6 +144,16 @@ func getSinks(client *pulse.Client) []pulse.Sink {
 	}
 
 	return sinks
+}
+
+func getSinkInputs(client *pulse.Client) []pulse.SinkInput {
+	inputs, err := client.GetSinkInputs()
+
+	if err != nil {
+		failure("Failed to get sink inputs: %v", err)
+	}
+
+	return inputs
 }
 
 func getProfilesPath() string {
@@ -373,6 +383,15 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 
 			if err := client.SetDefaultSink(sink.Name); err != nil {
 				failure("Failed to set default sink %s: %v", sink.Name, err)
+			}
+
+			for _, input := range getSinkInputs(client) {
+				if input.SinkIndex != sink.Index {
+					verbose("Moving sink input %d from sink %d to %d", input.Index, input.SinkIndex, sink.Index)
+					if err := input.MoveToSink(sink.Index); err != nil {
+						failure("Failed to move sink input: %v", err)
+					}
+				}
 			}
 		}
 

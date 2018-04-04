@@ -52,6 +52,3 @@ $ go get github.com/tomyl/pap
 $ ~/go/bin/pap -help
 ```
 
-# TODO
-
-* [ ] When running `-next` and `-next-auto`, move all playback streams.
