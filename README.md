@@ -32,7 +32,7 @@ nuforce
 
 Tip: use e.g. `pap -next -notify` to show messages in desktop notifcations instead of standard output.
 
-Alternatively, use the zero-configuration mode. `-list-auto` automatically builds one one profile per sink. If the card of the sink has any corresponding source, that becomes the profile source. Use `-next-auto` to switch between auto-generated profiles.
+Alternatively, use the zero-configuration mode. `-list-auto` automatically builds one profile per sink. If the card of the sink has any source, that becomes the profile source. Use `-next-auto` to switch between auto-generated profiles.
 
 ```bash
 $ pap -list-auto                                  
