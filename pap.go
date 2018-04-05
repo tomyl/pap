@@ -11,8 +11,8 @@ import (
 	"path"
 	"sort"
 
+	"github.com/auroralaboratories/pulse"
 	xdg "github.com/queria/golang-go-xdg"
-	"github.com/tomyl/pulse"
 )
 
 const (
