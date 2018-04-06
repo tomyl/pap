@@ -24,9 +24,9 @@ const (
 var flagAdd string
 var flagCurrent bool
 var flagList bool
-var flagListAuto bool
+var flagListSinks bool
 var flagNext bool
-var flagNextAuto bool
+var flagNextSink bool
 var flagRemove string
 var flagNotifications bool
 var flagVerbose bool
@@ -35,9 +35,9 @@ func init() {
 	flag.StringVar(&flagAdd, "add", "", "Save current source/sink pair as this profile name.")
 	flag.BoolVar(&flagCurrent, "current", false, "Show current profile")
 	flag.BoolVar(&flagList, "list", false, "List profiles.")
-	flag.BoolVar(&flagListAuto, "list-auto", false, "List auto-generated profiles.")
+	flag.BoolVar(&flagListSinks, "list-sinks", false, "List sinks.")
 	flag.BoolVar(&flagNext, "next", false, "Switch to next profile.")
-	flag.BoolVar(&flagNextAuto, "next-auto", false, "Switch to next auto-generated profile.")
+	flag.BoolVar(&flagNextSink, "next-sink", false, "Switch to next source/sink pair.")
 	flag.StringVar(&flagRemove, "remove", "", "Remove profile.")
 	flag.BoolVar(&flagNotifications, "notify", false, "Use desktop notifications.")
 	flag.BoolVar(&flagVerbose, "verbose", false, "Use verbose output.")
@@ -224,11 +224,11 @@ func cmdListProfiles() {
 
 func listProfiles(profiles []profile, info pulse.ServerInfo) {
 	for _, profile := range profiles {
-		def := ""
+		cur := ""
 		if (profile.Source == nil || profile.Source.Name == info.DefaultSourceName) && profile.Sink.Name == info.DefaultSinkName {
-			def = "*"
+			cur = " [current]"
 		}
-		fmt.Printf("%s%s\n", profile.Title, def)
+		fmt.Printf("%s%s\n", profile.Title, cur)
 		if flagVerbose {
 			if profile.Source != nil {
 				fmt.Printf("\tsource %s (%s)\n", profile.Source.Name, profile.Source.Description)
@@ -238,14 +238,14 @@ func listProfiles(profiles []profile, info pulse.ServerInfo) {
 	}
 }
 
-func cmdListAutoProfiles() {
+func cmdListSinkProfiles() {
 	client := getClient()
 	info := getServerInfo(client)
-	profiles := getAutoProfiles(client)
+	profiles := getSinkProfiles(client)
 	listProfiles(profiles, info)
 }
 
-func getAutoProfiles(client *pulse.Client) []profile {
+func getSinkProfiles(client *pulse.Client) []profile {
 	sources := getSources(client)
 	sinks := getSinks(client)
 	cardsource := make(map[int]pulse.Source, 0)
@@ -266,9 +266,13 @@ func getAutoProfiles(client *pulse.Client) []profile {
 }
 
 func cmdCurrentProfile() {
-	profiles := loadProfiles()
 	client := getClient()
 	info := getServerInfo(client)
+	showCurrentProfile(loadProfiles(), info)
+	showCurrentProfile(getSinkProfiles(client), info)
+}
+
+func showCurrentProfile(profiles []profile, info pulse.ServerInfo) {
 	for _, profile := range profiles {
 		if (profile.Source == nil || profile.Source.Name == info.DefaultSourceName) && profile.Sink.Name == info.DefaultSinkName {
 			success(profile.Title)
@@ -332,9 +336,9 @@ func cmdNextProfile() {
 	nextProfile(client, profiles)
 }
 
-func cmdNextAutoProfile() {
+func cmdNextSinkProfile() {
 	client := getClient()
-	profiles := getAutoProfiles(client)
+	profiles := getSinkProfiles(client)
 	nextProfile(client, profiles)
 }
 
@@ -429,12 +433,12 @@ func main() {
 		cmdCurrentProfile()
 	case flagList:
 		cmdListProfiles()
-	case flagListAuto:
-		cmdListAutoProfiles()
+	case flagListSinks:
+		cmdListSinkProfiles()
 	case flagNext:
 		cmdNextProfile()
-	case flagNextAuto:
-		cmdNextAutoProfile()
+	case flagNextSink:
+		cmdNextSinkProfile()
 	case flagRemove != "":
 		cmdRemoveProfile(flagRemove)
 	default:

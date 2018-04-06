@@ -7,42 +7,36 @@ A simple pulseaudio profile manager. Makes it easy to switch between preconfigur
 
 # Usage
 
+Use `pap -next-sink` to cycle between sinks. The chosen sink will be marked as
+default and active streams will switch to it.  If the card providing the sink
+has a source, that will become the default source. Use `pap -list-sinks` to
+show found sinks.
+
+```bash
+$ pap -next-sink
+Activated profile NuForce µDAC 2 Analog Stereo.
+$ pap -list-sinks                         
+Built-in Audio Digital Stereo (HDMI)
+Built-in Audio Analog Stereo
+ClearChat Pro USB Analog Stereo
+NuForce µDAC 2 Analog Stereo [current]
+```
+
+You can also save custom source/sink pairs as a profile:
+
 ```bash
 $ pavucontrol # choose default source and sink
 $ pap -add headset   
 Added profile headset.
 $ pap -list
-headset*
+headset [current]
 laptop
 nuforce
 $ pap -next
 Activated profile laptop.
-$ pap -list -verbose
-Loading /home/tomyl/.local/share/pap/profiles.json
-headset
-        source alsa_input.usb-Logitech_Logitech_USB_Headset-00.analog-mono (ClearChat Pro USB Analog Mono)
-        sink   alsa_output.usb-Logitech_Logitech_USB_Headset-00.analog-stereo (ClearChat Pro USB Analog Stereo)
-laptop*
-        source alsa_input.pci-0000_00_1b.0.analog-stereo (Built-in Audio Analog Stereo)
-        sink   alsa_output.pci-0000_00_1b.0.analog-stereo (Built-in Audio Analog Stereo)
-nuforce
-        source alsa_input.usb-NuForce_NuForce___DAC_2-01.analog-stereo (NuForce µDAC 2 Analog Stereo)
-        sink   alsa_output.usb-NuForce_NuForce___DAC_2-01.analog-stereo (NuForce µDAC 2 Analog Stereo)
 ```
 
 Tip: use e.g. `pap -next -notify` to show messages in desktop notifcations instead of standard output.
-
-Alternatively, use the zero-configuration mode. `-list-auto` automatically builds one profile per sink. If the card of the sink has any source, that becomes the profile source. Use `-next-auto` to switch between auto-generated profiles.
-
-```bash
-$ pap -list-auto                                  
-Built-in Audio Digital Stereo (HDMI)
-Built-in Audio Analog Stereo
-ClearChat Pro USB Analog Stereo*
-NuForce µDAC 2 Analog Stereo
-$ pap -next-auto
-Activated profile NuForce µDAC 2 Analog Stereo.
-```
 
 # Installation
 
@@ -51,4 +45,3 @@ $ apt-get install libpulse-dev
 $ go get github.com/tomyl/pap
 $ ~/go/bin/pap -help
 ```
-
