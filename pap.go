@@ -412,7 +412,7 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 			}
 		}
 
-		success("Activated profile %s.", active.Title)
+		success("Activated %s.", active.Title)
 		return
 	}
 }

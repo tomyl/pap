@@ -14,7 +14,7 @@ show available sinks.
 
 ```bash
 $ pap -next-sink
-Activated profile NuForce µDAC 2 Analog Stereo.
+Activated NuForce µDAC 2 Analog Stereo.
 $ pap -list-sinks                         
 Built-in Audio Digital Stereo (HDMI)
 Built-in Audio Analog Stereo
@@ -33,7 +33,7 @@ headset [current]
 laptop
 nuforce
 $ pap -next
-Activated profile laptop.
+Activated laptop.
 ```
 
 Tip: use e.g. `pap -next -notify` to show messages in desktop notifcations instead of standard output.
