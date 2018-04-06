@@ -22,6 +22,7 @@ const (
 )
 
 var flagAdd string
+var flagCurrent bool
 var flagList bool
 var flagListAuto bool
 var flagNext bool
@@ -32,6 +33,7 @@ var flagVerbose bool
 
 func init() {
 	flag.StringVar(&flagAdd, "add", "", "Save current source/sink pair as this profile name.")
+	flag.BoolVar(&flagCurrent, "current", false, "Show current profile")
 	flag.BoolVar(&flagList, "list", false, "List profiles.")
 	flag.BoolVar(&flagListAuto, "list-auto", false, "List auto-generated profiles.")
 	flag.BoolVar(&flagNext, "next", false, "Switch to next profile.")
@@ -263,6 +265,17 @@ func getAutoProfiles(client *pulse.Client) []profile {
 	return profiles
 }
 
+func cmdCurrentProfile() {
+	profiles := loadProfiles()
+	client := getClient()
+	info := getServerInfo(client)
+	for _, profile := range profiles {
+		if (profile.Source == nil || profile.Source.Name == info.DefaultSourceName) && profile.Sink.Name == info.DefaultSinkName {
+			success(profile.Title)
+		}
+	}
+}
+
 func cmdAddProfile(title string) {
 	client := getClient()
 	info := getServerInfo(client)
@@ -400,12 +413,20 @@ func nextProfile(client *pulse.Client, profiles []profile) {
 	}
 }
 
+func usage() {
+	fmt.Printf("pap - a simple pulseaudio profile manager\n")
+	flag.PrintDefaults()
+}
+
 func main() {
+	flag.Usage = usage
 	flag.Parse()
 
 	switch {
 	case flagAdd != "":
 		cmdAddProfile(flagAdd)
+	case flagCurrent:
+		cmdCurrentProfile()
 	case flagList:
 		cmdListProfiles()
 	case flagListAuto:
@@ -417,8 +438,7 @@ func main() {
 	case flagRemove != "":
 		cmdRemoveProfile(flagRemove)
 	default:
-		fmt.Printf("pap - a simple pulseaudio profile manager\n")
-		flag.PrintDefaults()
+		usage()
 	}
 }
 
