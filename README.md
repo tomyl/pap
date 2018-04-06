@@ -3,14 +3,14 @@
 [![Build Status](https://travis-ci.org/tomyl/pap.svg?branch=master)](https://travis-ci.org/tomyl/pap)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tomyl/pap)](https://goreportcard.com/report/github.com/tomyl/pap)
 
-A simple pulseaudio profile manager. Makes it easy to switch between preconfigured pairs of sources/sinks. 
+A simple pulseaudio profile manager. Makes it easy to switch between pairs of sources/sinks. 
 
 # Usage
 
 Use `pap -next-sink` to cycle between sinks. The chosen sink will be marked as
-default and active streams will switch to it.  If the card providing the sink
+default and active playback streams will switch to it. If the card providing the sink
 has a source, that will become the default source. Use `pap -list-sinks` to
-show found sinks.
+show available sinks.
 
 ```bash
 $ pap -next-sink
