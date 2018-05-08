@@ -183,6 +183,10 @@ func loadProfiles() []profile {
 		failure("Failed to read %s: %v", filepath, err)
 	}
 
+	if len(buf) == 0 {
+		return profiles
+	}
+
 	if err := json.Unmarshal(buf, &profiles); err != nil {
 		failure("Failed to decode json: %v", err)
 	}
