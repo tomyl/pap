@@ -1,6 +1,6 @@
 # pap :microphone: :speaker:
 
-[![Build Status](https://travis-ci.org/tomyl/pap.svg?branch=master)](https://travis-ci.org/tomyl/pap)
+[![Build Status](https://travis-ci.com/tomyl/pap.svg?branch=master)](https://travis-ci.org/tomyl/pap)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tomyl/pap)](https://goreportcard.com/report/github.com/tomyl/pap)
 
 A simple pulseaudio profile manager. Makes it easy to switch between pairs of sources/sinks. 
